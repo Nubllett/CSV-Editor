@@ -52,55 +52,28 @@ namespace CSV_Editor
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 csvFile = dlg.FileName;
-                saved = false;
                 LoadFile();
             }
+
+            
         }
 
         private void LoadFile()
         {
-            string rawData = LoadData(csvFile);
+            table1.ParseFile(csvFile);
+            table1.DataChanged += DataChanged;
+        }
 
-            string[] cols = getColumns(rawData);
-
-            DataTable table=new DataTable();
-            DataSet ds = new DataSet();
-            
-            foreach(string col in cols)
-            {
-                table.Columns.Add(col);
-            }
-
-            string data = stripData(rawData);
-            string[] lines = null;
-            if (data.Contains("\r\n"))
-            {
-                lines = data.Split(new char[] { '\r', '\n' });
-            }
-            else
-            {
-                lines = data.Split('\n');
-            }
-
-            foreach(string line in lines)
-            {
-                DataRow row = table.NewRow();
-                string[] colValues = line.Split(',');
-                for(int i = 0; i<row.Table.Columns.Count - 1; i++)
-                {
-                    row[i] = colValues[i];
-                }
-            }
-
-            ds.Tables.Add(table);
-            Grid1.DataSource = ds;
+        private void DataChanged(object sender, EventArgs e)
+        {
+            saved = false;
         }
 
         private string LoadData(string file)
         {
             string retVal = "";
 
-            System.IO.FileStream fs = new System.IO.FileStream(file,System.IO.FileMode.Open,System.IO.FileAccess.Read);
+            System.IO.FileStream fs = new System.IO.FileStream(file, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             byte[] buffer = new byte[fs.Length];
 
             fs.Read(buffer, 0, buffer.Length);
@@ -108,7 +81,7 @@ namespace CSV_Editor
 
             retVal = Encoding.UTF8.GetString(buffer);
 
-            Array.Clear(buffer,0, buffer.Length);
+            Array.Clear(buffer, 0, buffer.Length);
 
             return retVal;
         }
@@ -123,7 +96,7 @@ namespace CSV_Editor
             {
                 line = data.Split(new char[] { '\r', '\n' })[0];
             }
-            else if(data.Contains("\n"))
+            else if (data.Contains("\n"))
             {
                 line = data.Split('n')[0];
             }
@@ -138,9 +111,9 @@ namespace CSV_Editor
             string[] data = null;
 
 
-            if(rawData.Contains("\r\n"))
+            if (rawData.Contains("\r\n"))
             {
-                data=rawData.Split(new char[] { '\r', '\n' });
+                data = rawData.Split(new char[] { '\r', '\n' });
             }
             else
             {
@@ -148,11 +121,11 @@ namespace CSV_Editor
             }
             //we don't want the first line, this contains the heading names
             string cleanData = "";
-            for(int i =1; i < data.Length;)
+            for (int i = 1; i < data.Length;)
             {
                 //we don't want an empty line for data.
-                if (!string.IsNullOrEmpty( data[i]))
-                    cleanData += data[i];   
+                if (!string.IsNullOrEmpty(data[i]))
+                    cleanData += data[i];
             }
 
 
