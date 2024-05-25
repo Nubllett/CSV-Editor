@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -14,6 +15,7 @@ namespace CSV_Editor
     public partial class Form1 : Form
     {
         bool saved = true;
+        bool opened = false;
 
         string csvFile = "";
 
@@ -55,7 +57,7 @@ namespace CSV_Editor
                 LoadFile();
             }
 
-            
+
         }
 
         private void LoadFile()
@@ -130,6 +132,58 @@ namespace CSV_Editor
 
 
             return cleanData;
+        }
+
+        private void mnuSaveAs_Click(object sender, EventArgs e)
+        {
+            if (!opened)
+            {
+                System.Media.SystemSounds.Exclamation.Play();
+                return; }
+
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "CSV files *.csv|*.csv";
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                saved = saveFile(dlg.FileName);
+                System.Media.SystemSounds.Hand.Play();
+            }
+        }
+
+        private bool saveFile(string fileName)
+        {
+            bool success = false;
+
+            string data = table1.ToString();
+
+            System.IO.FileStream fs = new System.IO.FileStream(fileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write);
+            byte[] buffer = null;
+
+            buffer = Encoding.UTF8.GetBytes(data);
+
+            fs.Write(buffer, 0, buffer.Length);
+            fs.Flush();
+            fs.Close();
+            fs.Dispose();
+
+            success = true;
+
+            Array.Clear(buffer, 0, buffer.Length);
+
+            data = string.Empty;
+
+            return success;
+
+        }
+
+        private void mnuSave_Click(object sender, EventArgs e)
+        {
+            saved=saveFile(csvFile);
+
+            if (saved)
+                System.Media.SystemSounds.Hand.Play();
         }
     }
 }

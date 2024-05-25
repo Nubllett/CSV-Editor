@@ -20,18 +20,20 @@ namespace CSV_Controls
 
         List<Control> controls;
 
-        public  EventHandler DataChanged;
-        
+        string eol = "";
+
+        public EventHandler DataChanged;
+
         private char sep = ','; // the seperator character
         [Category("CSV")]
         public char Seperator
         {
             get => sep;
-            set => sep = value;    
+            set => sep = value;
         }
 
 
-        private int _colWidth=100;
+        private int _colWidth = 100;
         [Category("CSV")]
         public int ColWidth { get => _colWidth; set => _colWidth = value; }
 
@@ -41,11 +43,6 @@ namespace CSV_Controls
         }
 
         private void CSVTable_Load(object sender, EventArgs e)
-        {
-            DataChanged += newData;
-        }
-
-        public void newData(object o, EventArgs e)
         {
 
         }
@@ -68,12 +65,27 @@ namespace CSV_Controls
 
         public void Parse(string data)
         {
+            if (controls != null)
+            {
+                foreach(Control control in controls)
+                {
+                    panelData.Controls.Remove(control);
+                }
+                for(int i=controls.Count()-1; i >= 0; i--)
+                {
+                    Control control = controls[i];
+                    controls.Remove(control);
+                    control.Dispose();                       
+                }
+                controls.Clear();
+                controls = null;
+            }
             controls = new List<Control>();
 
             createHeaders(data);
             createControls();
 
-            foreach(Control control in controls)
+            foreach (Control control in controls)
             {
                 panelData.Controls.Add(control);
             }
@@ -91,10 +103,12 @@ namespace CSV_Controls
             if (data.Contains("\r\n"))
             {
                 line = data.Split(new char[] { '\r', '\n' })[0];
+                eol = "\r\n";
             }
             else
             {
                 line = data.Split('\n')[0];
+                eol = "\n";
             }
 
             headers = line.Split(sep);
@@ -143,7 +157,7 @@ namespace CSV_Controls
                 l.Left = prevX;
                 l.Width = ColWidth;
 
-                prevX +=l.Width;
+                prevX += l.Width;
                 if (controlHeight == 0) controlHeight = l.Height;
 
                 controls.Add(l);
@@ -174,6 +188,42 @@ namespace CSV_Controls
         private void T_TextChanged(object sender, EventArgs e)
         {
             this.DataChanged?.Invoke(sender, e);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            bool lineAdded = false;
+
+            int index = 0;
+            for (int i = 0; i < controls.Count(); i++)
+            {
+                if (index  == headers.Length-1 && index > 0)
+                {
+
+                }
+
+                sb.Append(controls[i].Text);
+
+                if (index == headers.Length - 1 && index > 0)
+                    sb.Append(eol);
+                else
+                    sb.Append(sep);
+
+                if (i == headers.Length - 1 && lineAdded==false)
+                { sb.Append(eol);
+                    lineAdded = true;
+
+                }
+
+
+                index++;
+
+                if (index == headers.Length )
+                    index = 0;
+            }
+
+            return sb.ToString();
         }
     }
 }
