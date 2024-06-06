@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -51,8 +52,8 @@ namespace CSV_Controls
         {
             fileName = csvFile;
 
-            System.IO.FileStream fs = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-            byte[] buffer = new byte[fs.Length];
+            System.IO.FileStream fs = new System.IO.FileStream(fileName, System.IO.FileMode.Open, System.IO.FileAccess.Read); byte[] buffer = new byte[fs.Length];
+
             fs.Read(buffer, 0, buffer.Length);
             fs.Close();
             fs.Dispose();
@@ -100,16 +101,9 @@ namespace CSV_Controls
             }
 
             string line = "";
-            if (data.Contains("\r\n"))
-            {
-                line = data.Split(new char[] { '\r', '\n' })[0];
-                eol = "\r\n";
-            }
-            else
-            {
-                line = data.Split('\n')[0];
-                eol = "\n";
-            }
+
+            eol = functions.GetEOL(data);
+            line = functions.SplitEOL(data)[0];
 
             headers = line.Split(sep);
 
@@ -121,10 +115,7 @@ namespace CSV_Controls
         private void createTable(string rawData)
         {
             string[] lines = null;
-            if (rawData.Contains("\r\n"))
-                lines = rawData.Split(new char[] { '\r', '\n' });
-            else
-                lines = rawData.Split('\n');
+            lines = functions.SplitEOL(rawData);
 
             List<string[]> rows = new List<string[]>();
 
@@ -198,10 +189,7 @@ namespace CSV_Controls
             int index = 0;
             for (int i = 0; i < controls.Count(); i++)
             {
-                if (index  == headers.Length-1 && index > 0)
-                {
 
-                }
 
                 sb.Append(controls[i].Text);
 
@@ -211,11 +199,10 @@ namespace CSV_Controls
                     sb.Append(sep);
 
                 if (i == headers.Length - 1 && lineAdded==false)
-                { sb.Append(eol);
+                { 
+                    sb.Append(eol);
                     lineAdded = true;
-
                 }
-
 
                 index++;
 
